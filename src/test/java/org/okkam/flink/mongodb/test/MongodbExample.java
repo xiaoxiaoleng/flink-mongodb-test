@@ -24,9 +24,8 @@ public class MongodbExample {
                 new MongoInputFormat(), BSONWritable.class, BSONWritable.class, new JobConf());
 
 
-       // hdIf.getJobConf().set("mongo.input.uri", "mongodb://mongo:MongoDB_863*^#@10.1.50.15:27017/pacific.resObject?authMechanism=SCRAM-SHA-1&authSource=admin");
+        // hdIf.getJobConf().set("mongo.input.uri", "mongodb://mongo:MongoDB_863*^#@10.1.50.15:27017/pacific.resObject?authMechanism=SCRAM-SHA-1&authSource=admin");
         hdIf.getJobConf().set("mongo.input.uri", "mongodb://mongo:MongoDB_863*^#@10.1.50.15:27017/pacific.resHistory?authMechanism=SCRAM-SHA-1&authSource=admin");
-
 
 
         long start = System.currentTimeMillis();
