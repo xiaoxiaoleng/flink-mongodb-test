@@ -24,8 +24,8 @@ public class MongodbExample {
                 new MongoInputFormat(), BSONWritable.class, BSONWritable.class, new JobConf());
 
 
-        // hdIf.getJobConf().set("mongo.input.uri", "mongodb://mongo:MongoDB_863*^#@10.1.50.15:27017/pacific.resObject?authMechanism=SCRAM-SHA-1&authSource=admin");
-        hdIf.getJobConf().set("mongo.input.uri", "mongodb://mongo:MongoDB_863*^#@10.1.50.15:27017/pacific.resHistory?authMechanism=SCRAM-SHA-1&authSource=admin");
+        hdIf.getJobConf().set("mongo.input.uri", "mongodb://mongo:MongoDB_863*^#@10.1.50.15:27017/pacific.resObject?authMechanism=SCRAM-SHA-1&authSource=admin");
+        // hdIf.getJobConf().set("mongo.input.uri", "mongodb://mongo:MongoDB_863*^#@10.1.50.15:27017/pacific.resHistory?authMechanism=SCRAM-SHA-1&authSource=admin");
 
 
         long start = System.currentTimeMillis();
@@ -36,6 +36,8 @@ public class MongodbExample {
                 new MapFunction<Tuple2<BSONWritable, BSONWritable>, Tuple2<Text, BSONWritable>>() {
 
                     private static final long serialVersionUID = 1L;
+
+                    int count = 0;
 
                     @Override
                     public Tuple2<Text, BSONWritable> map(Tuple2<BSONWritable, BSONWritable> record) throws Exception {
@@ -50,8 +52,10 @@ public class MongodbExample {
                                 // .add("type", jsonld.getString("@type"))
                                 .get();
 
+                        count = count + 1;
+
                         BSONWritable w = new BSONWritable(builder);
-                        return new Tuple2<Text, BSONWritable>(new Text(id), w);
+                        return new Tuple2<Text, BSONWritable>(new Text(String.valueOf(count)), w);
                     }
                 });
 
@@ -66,7 +70,7 @@ public class MongodbExample {
         env.execute("Mongodb Example");
         long end = System.currentTimeMillis();
         long r = end - start;
-        System.out.println("========== end cost time " + r + " ms==========");
+        System.out.println("========== end cost time: " + r + " ms;  ==========");
 
     }
 }
