@@ -7,8 +7,8 @@ import com.mongodb.hadoop.mapred.MongoInputFormat;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
+import org.apache.flink.api.java.hadoop.mapred.HadoopInputFormat;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.hadoopcompatibility.mapred.HadoopInputFormat;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.bson.BSONObject;
@@ -41,8 +41,8 @@ public class MongodbExample {
                 new MongoInputFormat(), BSONWritable.class, BSONWritable.class, new JobConf());
 
 
-       // hdIf.getJobConf().set("mongo.input.split.create_input_splits", "false");
-       // hdIf.getJobConf().set("mongo.input.query", condition);
+        // hdIf.getJobConf().set("mongo.input.split.create_input_splits", "false");
+        // hdIf.getJobConf().set("mongo.input.query", condition);
 
         hdIf.getJobConf().set("mongo.input.uri", "mongodb://mongo:MongoDB_863*^#@10.1.50.15:27017/pacific.resObject?authMechanism=SCRAM-SHA-1&authSource=admin");
         // hdIf.getJobConf().set("mongo.input.uri", "mongodb://mongo:MongoDB_863*^#@10.1.50.15:27017/pacific.resHistory?authMechanism=SCRAM-SHA-1&authSource=admin");
@@ -93,7 +93,7 @@ public class MongodbExample {
         // fin.output(new HadoopOutputFormat<Text, BSONWritable>(new MongoOutputFormat<Text, BSONWritable>(), hdIf.getJobConf()));
 
         // execute program
-        env.execute("Mongodb Example");
+       // env.execute("Mongodb Example");
         long end = System.currentTimeMillis();
         long r = end - start;
         System.out.println("========== end cost time: " + r + " ms;  ==========");
