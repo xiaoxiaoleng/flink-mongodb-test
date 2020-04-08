@@ -16,13 +16,33 @@ import org.bson.BSONObject;
 public class MongodbExample {
     public static void main(String[] args) throws Exception {
 
+//        final ParameterTool params = ParameterTool.fromArgs(args);
+//
+//        String webSource = params.get("webSource", "baidu");
+//        int year = params.getInt("year", 2016);
+//        String condition = String.format("{'source':'%s','year':{'$regex':'^%d'}}", webSource, year);
+
         // set up the execution environment
         final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 
+/*
+        BatchTableEnvironment tEnv = BatchTableEnvironment.create(env);
+        tEnv.registerTableSource("transactions", new BoundedTransactionTableSource());
+        tEnv.registerTableSink("spend_report", new SpendReportTableSink());
+        tEnv.registerFunction("truncateDateToHour", new TruncateDateToHour());
+        tEnv.scan("transactions")
+                .insertInto("spend_report");
+        env.execute("Spend Report");
+*/
+
+
         // create a MongodbInputFormat, using a Hadoop input format wrapper
-        HadoopInputFormat<BSONWritable, BSONWritable> hdIf = new HadoopInputFormat<BSONWritable, BSONWritable>(
+        HadoopInputFormat<BSONWritable, BSONWritable> hdIf = new HadoopInputFormat<>(
                 new MongoInputFormat(), BSONWritable.class, BSONWritable.class, new JobConf());
 
+
+       // hdIf.getJobConf().set("mongo.input.split.create_input_splits", "false");
+       // hdIf.getJobConf().set("mongo.input.query", condition);
 
         hdIf.getJobConf().set("mongo.input.uri", "mongodb://mongo:MongoDB_863*^#@10.1.50.15:27017/pacific.resObject?authMechanism=SCRAM-SHA-1&authSource=admin");
         // hdIf.getJobConf().set("mongo.input.uri", "mongodb://mongo:MongoDB_863*^#@10.1.50.15:27017/pacific.resHistory?authMechanism=SCRAM-SHA-1&authSource=admin");
@@ -31,13 +51,14 @@ public class MongodbExample {
         long start = System.currentTimeMillis();
         System.out.println("========== begin ==========");
         DataSet<Tuple2<BSONWritable, BSONWritable>> input = env.createInput(hdIf);
+
         // a little example how to use the data in a mapper.
+
         DataSet<Tuple2<Text, BSONWritable>> fin = input.map(
                 new MapFunction<Tuple2<BSONWritable, BSONWritable>, Tuple2<Text, BSONWritable>>() {
 
                     private static final long serialVersionUID = 1L;
 
-                    int count = 0;
 
                     @Override
                     public Tuple2<Text, BSONWritable> map(Tuple2<BSONWritable, BSONWritable> record) throws Exception {
@@ -45,17 +66,22 @@ public class MongodbExample {
                         BSONWritable value = record.getField(1);
                         BSONObject doc = value.getDoc();
                         Object _id = doc.get("_id");
+                        Object _incre_id = doc.get("_incre_id");
+
 
                         String id = String.valueOf(_id);
                         DBObject builder = BasicDBObjectBuilder.start()
+                                .add("_incre_id", _incre_id)
                                 .add("id", id)
                                 // .add("type", jsonld.getString("@type"))
                                 .get();
 
-                        count = count + 1;
+                        if ("30009.0".equals(String.valueOf(_incre_id))) {
+                            System.out.println("===== =====");
+                        }
 
                         BSONWritable w = new BSONWritable(builder);
-                        return new Tuple2<Text, BSONWritable>(new Text(String.valueOf(count)), w);
+                        return new Tuple2<Text, BSONWritable>(new Text(id), w);
                     }
                 });
 
