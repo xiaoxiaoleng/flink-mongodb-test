@@ -9,6 +9,8 @@ import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.hadoop.mapred.HadoopInputFormat;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.table.api.java.BatchTableEnvironment;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.bson.BSONObject;
@@ -16,24 +18,23 @@ import org.bson.BSONObject;
 public class MongodbExample {
     public static void main(String[] args) throws Exception {
 
-//        final ParameterTool params = ParameterTool.fromArgs(args);
-//
-//        String webSource = params.get("webSource", "baidu");
-//        int year = params.getInt("year", 2016);
-//        String condition = String.format("{'source':'%s','year':{'$regex':'^%d'}}", webSource, year);
-
-        // set up the execution environment
         final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 
-/*
+        final ParameterTool params = ParameterTool.fromArgs(args);
+        String source = params.get("source", "baidu");
+        int year = params.getInt("year", 2016);
+        String condition = String.format("{'source':'%s','year':{'$regex':'^%d'}}", source, year);
+
+        // set up the execution environment
         BatchTableEnvironment tEnv = BatchTableEnvironment.create(env);
+
         tEnv.registerTableSource("transactions", new BoundedTransactionTableSource());
         tEnv.registerTableSink("spend_report", new SpendReportTableSink());
         tEnv.registerFunction("truncateDateToHour", new TruncateDateToHour());
         tEnv.scan("transactions")
                 .insertInto("spend_report");
-        env.execute("Spend Report");
-*/
+
+        // env.execute("Spend Report");
 
 
         // create a MongodbInputFormat, using a Hadoop input format wrapper
@@ -41,8 +42,8 @@ public class MongodbExample {
                 new MongoInputFormat(), BSONWritable.class, BSONWritable.class, new JobConf());
 
 
-        // hdIf.getJobConf().set("mongo.input.split.create_input_splits", "false");
-        // hdIf.getJobConf().set("mongo.input.query", condition);
+        hdIf.getJobConf().set("mongo.input.split.create_input_splits", "false");
+        hdIf.getJobConf().set("mongo.input.query", condition);
 
         hdIf.getJobConf().set("mongo.input.uri", "mongodb://mongo:MongoDB_863*^#@10.1.50.15:27017/pacific.resObject?authMechanism=SCRAM-SHA-1&authSource=admin");
         // hdIf.getJobConf().set("mongo.input.uri", "mongodb://mongo:MongoDB_863*^#@10.1.50.15:27017/pacific.resHistory?authMechanism=SCRAM-SHA-1&authSource=admin");
@@ -93,7 +94,7 @@ public class MongodbExample {
         // fin.output(new HadoopOutputFormat<Text, BSONWritable>(new MongoOutputFormat<Text, BSONWritable>(), hdIf.getJobConf()));
 
         // execute program
-       // env.execute("Mongodb Example");
+        // env.execute("Mongodb Example");
         long end = System.currentTimeMillis();
         long r = end - start;
         System.out.println("========== end cost time: " + r + " ms;  ==========");
