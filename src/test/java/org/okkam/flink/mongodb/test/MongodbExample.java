@@ -9,11 +9,6 @@ import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.hadoop.mapred.HadoopInputFormat;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.table.api.java.BatchTableEnvironment;
-import org.apache.flink.walkthrough.common.table.BoundedTransactionTableSource;
-import org.apache.flink.walkthrough.common.table.SpendReportTableSink;
-import org.apache.flink.walkthrough.common.table.TruncateDateToHour;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.bson.BSONObject;
@@ -21,35 +16,38 @@ import org.bson.BSONObject;
 public class MongodbExample {
     public static void main(String[] args) throws Exception {
 
+        // set up the execution environment
         final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
         // create a MongodbInputFormat, using a Hadoop input format wrapper
         HadoopInputFormat<BSONWritable, BSONWritable> hdIf = new HadoopInputFormat<>(
                 new MongoInputFormat(), BSONWritable.class, BSONWritable.class, new JobConf());
-
+/*
         final ParameterTool params = ParameterTool.fromArgs(args);
         String source = params.get("source", "baidu");
         int year = params.getInt("year", 2016);
         String condition = String.format("{'source':'%s','year':{'$regex':'^%d'}}", source, year);
-
-        // set up the execution environment
         BatchTableEnvironment tEnv = BatchTableEnvironment.create(env);
-
         tEnv.registerTableSource("transactions", new BoundedTransactionTableSource());
         tEnv.registerTableSink("spend_report", new SpendReportTableSink());
         tEnv.registerFunction("truncateDateToHour", new TruncateDateToHour());
-
         tEnv.scan("transactions")
-                .insertInto("spend_report");
-
-        // env.execute("Spend Report");
-
+                .insertInto("spend_report");*/
 
         hdIf.getJobConf().set("mongo.input.split.create_input_splits", "false");
-        hdIf.getJobConf().set("mongo.input.query", condition);
+        //hdIf.getJobConf().set("mongo.input.query", condition);
 
         hdIf.getJobConf().set("mongo.input.uri", "mongodb://mongo:MongoDB_863*^#@10.1.50.15:27017/pacific.resObject?authMechanism=SCRAM-SHA-1&authSource=admin");
+        // hdIf.getJobConf().set("mongo.input.query", "{ \"attrValues.lifecycleState\":{$exists: true}}");
 
 
+        // new Date(1234567890)
+        // db.resObject.find({ "createTime" : { "$gte" : ISODate("2018-10-11T09:34:55.556Z") } })
+      //  hdIf.getJobConf().set("mongo.input.query", "{ \"createTime\" : { \"$gte\" : {\"$date\":\"2018-10-11T09:34:55.556Z\"} } }");
+
+        hdIf.getJobConf().set("mongo.input.query", "{\"createTime\":{\"$gte\": {\"$date\":\"2018-10-11T09:34:55.556Z\"},\"$lt\": {\"$date\":\"2020-10-11T09:34:55.556Z\"} }}");
+//        hdIf.getJobConf().set("mongo.input.query", "{\"$and\":[{\"attrValues.lifecycleState\":{\"$exists\":\"true\"}}, {\"createTime\": {\"$gte\":{\"$date\":\"2018-10-11T09:34:55.556Z\"},\"$lt\":{\"$date\":\"2019-12-16T07:28:17.344+0000\"}}}]}");
+
+        //hdIf.getJobConf().set("mongo.input.query", "{'classCode' : \"NetworkDomain\"}");
 
         long start = System.currentTimeMillis();
         System.out.println("========== begin ==========");
@@ -61,7 +59,6 @@ public class MongodbExample {
                 new MapFunction<Tuple2<BSONWritable, BSONWritable>, Tuple2<Text, BSONWritable>>() {
 
                     private static final long serialVersionUID = 1L;
-
 
                     @Override
                     public Tuple2<Text, BSONWritable> map(Tuple2<BSONWritable, BSONWritable> record) throws Exception {
